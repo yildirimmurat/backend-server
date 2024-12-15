@@ -14,7 +14,7 @@ fn handle_client(mut stream: TcpStream, port: String) {
             println!("BE: Received request: {}", request);
 
             // Send a simple response back to the client
-            let response = format!("Hello from Backend Server! Port: {}\n", port);
+            let response = format!("HTTP/1.1 200 OK Content:Hello from Backend Server! Port: {}\n", port);
             if let Err(e) = stream.write_all(response.as_bytes()) {
                 eprintln!("BE: Failed to send response: {}", e);
             }
