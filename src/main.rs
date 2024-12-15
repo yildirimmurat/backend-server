@@ -5,6 +5,7 @@ use std::process;
 use std::thread;
 
 fn handle_client(mut stream: TcpStream, port: String) {
+    println!("hi there");
     let mut buffer = [0; 1024];
 
     // Read the request from the client
@@ -13,10 +14,25 @@ fn handle_client(mut stream: TcpStream, port: String) {
             let request = String::from_utf8_lossy(&buffer[..n]);
             println!("BE: Received request: {}", request);
 
-            // Send a simple response back to the client
-            let response = format!("HTTP/1.1 200 OK Content:Hello from Backend Server! Port: {}\n", port);
-            if let Err(e) = stream.write_all(response.as_bytes()) {
-                eprintln!("BE: Failed to send response: {}", e);
+            // Check if the request is for the /health endpoint
+            if request.starts_with("GET /health") {
+                // Send a healthy response for the /health endpoint
+                let health_response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nContent: Server on port {} is healthy!\n",
+                    port
+                );
+                if let Err(e) = stream.write_all(health_response.as_bytes()) {
+                    eprintln!("BE: Failed to send health response: {}", e);
+                }
+            } else {
+                // Otherwise, handle normal client request
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nContent: Hello from Backend Server! Port: {}\n",
+                    port
+                );
+                if let Err(e) = stream.write_all(response.as_bytes()) {
+                    eprintln!("BE: Failed to send response: {}", e);
+                }
             }
         },
         _ => {
